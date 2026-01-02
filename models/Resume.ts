@@ -15,9 +15,9 @@ const ResumeSchema = new Schema<ResumeDocument>({
   title: { type: String, required: true },
   filePath: { type: String, required: true },
   visibility: { type: String, required: true, enum: ["public", "private"] },
-  skills: { type: [String], required: true },
-  experience: { type: [String], required: true },
-  education: { type: [String], required: true }
+  skills: { type: [String] },
+  experience: { type: [String] },
+  education: { type: [String] }
 }, { timestamps: true });
 
 export const Resume = mongoose.models.Resume || mongoose.model<ResumeDocument>("Resume", ResumeSchema);
