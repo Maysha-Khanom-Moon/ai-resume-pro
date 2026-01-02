@@ -5,7 +5,7 @@ export interface IUser extends Document {
   _id: mongoose.Types.ObjectId
   name: string
   email: string
-  password?: string // Optional for OAuth users
+  password?: string
   role: string[]
   education?: string
   experience?: string
@@ -16,64 +16,38 @@ export interface IUser extends Document {
   githubLink?: string
   linkedinLink?: string
   location?: string
-  provider?: string // "google", "github", or undefined for credentials
+  provider?: string
   createdAt: Date
   updatedAt: Date
 }
 
 const UserSchema = new Schema<IUser>(
   {
-    name: { 
-      type: String, 
-      required: true,
-      trim: true 
-    },
+    name: { type: String, required: true, trim: true },
     email: { 
       type: String, 
       required: true, 
-      unique: true,
+      unique: true,  // Remove this if you have schema.index() below
       lowercase: true,
       trim: true 
     },
-    password: { 
-      type: String, 
-      select: false // Not selected by default for security
-      // Plain text password - no hashing
-    },
-    role: { 
-      type: [String], 
-      default: ["user"],
-      enum: ["user", "admin"] // Only allow these roles
-    },
+    password: { type: String, select: false },
+    role: { type: [String], default: ["user"] },
     education: { type: String },
     experience: { type: String },
     currentJob: { type: String },
-    skills: { 
-      type: [String], 
-      default: [] 
-    },
-    imageLink: { 
-      type: String, 
-      default: "" 
-    },
+    skills: { type: [String], default: [] },
+    imageLink: { type: String, default: "" },
     fbLink: { type: String },
     githubLink: { type: String },
     linkedinLink: { type: String },
     location: { type: String },
-    provider: { 
-      type: String,
-      enum: ["google", "github", null], // OAuth providers or null for credentials
-      default: null
-    },
+    provider: { type: String },
   },
-  { 
-    timestamps: true, // Automatically creates createdAt and updatedAt
-    strict: false // Allow additional fields if needed
-  }
+  { timestamps: true }
 )
 
-// Index for faster email lookups
-UserSchema.index({ email: 1 })
+// Remove this line if you have unique: true above
+// UserSchema.index({ email: 1 })
 
-// Prevent model recompilation in development
 export const User = mongoose.models.User || mongoose.model<IUser>('User', UserSchema)

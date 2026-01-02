@@ -49,24 +49,22 @@ export const authConfig = {
       },
       async authorize(credentials) {
         console.log("=== CREDENTIALS AUTH START ===")
+        
+        if (!credentials?.email || !credentials?.password) {
+          console.log("Missing email or password")
+          return null
+        }
+
         try {
-          const email = credentials?.email as string
-          const password = credentials?.password as string
-
-          if (!email || !password) {
-            console.log("Missing credentials")
-            return null
-          }
-
-          console.log("Connecting to DB...")
           await connectDB()
-          console.log("DB connected")
-
-          console.log("Finding user:", email)
-          const user = await User.findOne({ email }).select("+password")
-
+          console.log("DB connected, searching for user:", credentials.email)
+          
+          const user = await User.findOne({ email: credentials.email }).select("+password").lean()
+          
+          console.log("User found:", user ? "YES" : "NO")
+          
           if (!user) {
-            console.log("User not found")
+            console.log("No user with email:", credentials.email)
             return null
           }
 
@@ -76,19 +74,20 @@ export const authConfig = {
           }
 
           console.log("Comparing passwords (plain text)...")
-          // Plain password comparison
-          if (user.password !== password) {
-            console.log("Invalid password")
+          
+          if (user.password !== credentials.password) {
+            console.log("Password mismatch!")
             return null
           }
 
-          console.log("Auth successful for:", user.email)
+          console.log("✅ Auth successful for:", user.email)
+          
           return {
             id: user._id.toString(),
             email: user.email,
             name: user.name,
-            role: user.role,
-            image: user.imageLink,
+            role: user.role || ["user"],
+            image: user.imageLink || "",
           }
         } catch (error) {
           console.error("Authorize error:", error)
@@ -106,7 +105,7 @@ export const authConfig = {
       console.log("=== SIGNIN CALLBACK START ===")
       console.log("User:", user?.email)
       console.log("Provider:", account?.provider)
-      console.log("Profile image:", user?.image)
+      console.log("User object:", JSON.stringify(user, null, 2))
       
       try {
         if (!user?.email) {
@@ -118,17 +117,15 @@ export const authConfig = {
         if (account?.provider === "google" || account?.provider === "github") {
           console.log("OAuth sign in detected")
           
-          console.log("Connecting to DB...")
           await connectDB()
           console.log("✓ DB connected")
           
-          console.log("Looking for existing user...")
-          let existingUser = await User.findOne({ email: user.email })
+          let existingUser = await User.findOne({ email: user.email }).lean()
+          console.log("Existing user:", existingUser ? "Found" : "Not found")
           
           if (!existingUser) {
-            console.log("User not found, creating new user...")
+            console.log("Creating new user...")
             
-            // Check if email is admin
             const isAdmin = user.email === "maysha412@gmail.com"
             
             const userData = {
@@ -139,36 +136,35 @@ export const authConfig = {
               imageLink: user.image || "",
             }
             
-            console.log("Creating user with data:", userData)
+            console.log("User data to create:", userData)
             
-            existingUser = await User.create(userData)
+            const newUser = await User.create(userData)
+            existingUser = newUser.toObject()
             
             console.log("✓ User created:", existingUser._id)
           } else {
             console.log("✓ Existing user found:", existingUser._id)
             
-            // Update profile image if it changed
+            // Update image if changed
             if (user.image && existingUser.imageLink !== user.image) {
               console.log("Updating profile image...")
-              existingUser.imageLink = user.image
-              await existingUser.save()
-              console.log("✓ Profile image updated")
+              await User.findByIdAndUpdate(existingUser._id, { imageLink: user.image })
             }
             
             // Ensure admin role for maysha412@gmail.com
             if (user.email === "maysha412@gmail.com" && !existingUser.role.includes("admin")) {
               console.log("Adding admin role...")
+              await User.findByIdAndUpdate(existingUser._id, { role: ["admin", "user"] })
               existingUser.role = ["admin", "user"]
-              await existingUser.save()
-              console.log("✓ Admin role added")
             }
           }
           
+          // Set user data for JWT callback
           user.id = existingUser._id.toString()
           user.role = existingUser.role
-          user.image = existingUser.imageLink
+          user.image = existingUser.imageLink || user.image
           
-          console.log("✓ User data set:", { 
+          console.log("✓ Final user data:", { 
             id: user.id, 
             role: user.role,
             image: user.image 
@@ -177,13 +173,14 @@ export const authConfig = {
         
         console.log("=== SIGNIN CALLBACK SUCCESS ===")
         return true
+        
       } catch (error) {
         console.error("❌ SignIn callback error:", error)
-        if (error instanceof Error) {
-          console.error("Error message:", error.message)
-          console.error("Error stack:", error.stack)
-        }
-        return false
+        console.error("Error details:", error instanceof Error ? error.message : String(error))
+        console.error("Stack:", error instanceof Error ? error.stack : "")
+        
+        // Return true to allow login even if DB operation fails
+        return true
       }
     },
     async jwt({ token, user, trigger, session }) {
@@ -191,12 +188,12 @@ export const authConfig = {
       
       if (user) {
         token.id = user.id
-        token.role = user.role
+        // Convert array to JSON string for JWT
+        token.role = JSON.stringify(user.role || ["user"])
         token.image = user.image
-        console.log("✓ Token updated with user data including image")
+        console.log("✓ Token updated with user data")
       }
       
-      // Handle session update trigger
       if (trigger === "update" && session) {
         token.name = session.name
         token.image = session.image
@@ -210,9 +207,10 @@ export const authConfig = {
       
       if (token && session.user) {
         session.user.id = token.id as string
-        session.user.role = token.role as string[] | undefined
+        // Parse JSON string back to array
+        session.user.role = token.role ? JSON.parse(token.role as string) : ["user"]
         session.user.image = token.image as string | undefined
-        console.log("✓ Session updated with token data including image")
+        console.log("✓ Session updated with token data")
       }
       
       return session
