@@ -10,6 +10,7 @@ export const metadata: Metadata = {
 const poppins = Poppins({ subsets: ["latin"], weight: ["400", "500", "600", "700"] })
 
 import { ThemeProvider } from "@/components/theme-provider"
+import { SessionProvider } from "next-auth/react"
 
 export default function RootLayout({ children, }: Readonly<{ children: React.ReactNode; }>) {
   return (
@@ -17,14 +18,16 @@ export default function RootLayout({ children, }: Readonly<{ children: React.Rea
       <html lang="en" className={poppins.className} suppressHydrationWarning>
         <head />
         <body>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
-          </ThemeProvider>
+          <SessionProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              {children}
+            </ThemeProvider>
+          </SessionProvider>
         </body>
       </html>
     </>

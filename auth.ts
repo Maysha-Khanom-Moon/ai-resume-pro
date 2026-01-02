@@ -1,84 +1,106 @@
+// auth.ts
 import NextAuth from "next-auth"
 import Google from "next-auth/providers/google"
 import GitHub from "next-auth/providers/github"
-import CredentialsProvider from "next-auth/providers/credentials"
-import connectDB from "@/lib/db" // Import the db connection utility
-import { User } from "@/models/User" // Import the User model
-import { Session } from "next-auth" // Import types from NextAuth
+import Credentials from "next-auth/providers/credentials"
+import connectDB from "@/lib/db"
+import { User } from "@/models/User"
+import type { NextAuthConfig } from "next-auth"
 
-// Define the types for session and user
-interface SessionWithUser extends Session {
-  user: {
-    id: string
-    role: string[]
-    image: string
-  }
-}
-
-export const authOptions = {
+export const authConfig = {
   providers: [
-    // Google provider
-    GitHub,
     Google({
-      authorization: {
-        params: {
-          prompt: "consent",
-          access_type: "offline",
-          response_type: "code",
-        },
-      },
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
-    // Credentials provider (for email/password authentication)
-    CredentialsProvider({
+    GitHub({
+      clientId: process.env.GITHUB_CLIENT_ID!,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+    }),
+    Credentials({
       name: "Credentials",
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
-        // Connect to the database before querying
-        await connectDB()
+      authorize: async (credentials) => {
+        const email = credentials?.email as string | undefined
+        const password = credentials?.password as string | undefined
 
-        // Look for the user in the database by email
-        const user = await User.findOne({ email: credentials?.email }).exec()
-
-        // If the user is found and passwords match (no hashing in your case)
-        if (user && user.password === credentials?.password) {
-          return {
-            id: user._id.toString(),
-            name: user.name,
-            email: user.email,
-            role: user.role, // Add role if needed (admin or user)
-            image: user.imageLink, // Add user image link if stored
-          }
+        if (!email || !password) {
+          throw new Error("Email and password are required")
         }
 
-        // Return null if no user or incorrect password
-        return null
+        await connectDB()
+
+        const user = await User.findOne({ email }).select("+password")
+
+        if (!user) {
+          throw new Error("No user found with the given email")
+        }
+
+        // Use bcrypt.compare() in production
+        if (user.password !== password) {
+          throw new Error("Incorrect password")
+        }
+
+        return {
+          id: user._id.toString(),
+          email: user.email,
+          name: user.name,
+          role: user.role, // Include role
+        }
       },
     }),
   ],
-
-  // Default session handling (no JWT involved)
-  session: {
-    strategy: "database", // Ensure correct type of session strategy
+  pages: {
+    signIn: "/auth/signin",
   },
-
   callbacks: {
-    // Specify explicit types for session and user
-    async session({ session, user }: { session: SessionWithUser, user: any }) {
+    async jwt({ token, user }) {
       if (user) {
-        session.user.id = user.id
-        session.user.role = user.role
-        session.user.image = user.image
+        token.id = user.id
+        token.role = user.role // Add role to token
+      }
+      return token
+    },
+    async session({ session, token }) {
+      if (token && session.user) {
+        session.user.id = token.id as string
+        session.user.role = token.role as string[] | undefined // Add role to session
       }
       return session
     },
+    async signIn({ user, account, profile }) {
+      // Handle OAuth sign-ins (Google, GitHub)
+      if (account?.provider === "google" || account?.provider === "github") {
+        await connectDB()
+        
+        const existingUser = await User.findOne({ email: user.email })
+        
+        if (!existingUser) {
+          // Create new user for OAuth
+          const newUser = new User({
+            name: user.name,
+            email: user.email,
+            role: ["user"], // Default role for OAuth users
+            provider: account.provider,
+          })
+          await newUser.save()
+          
+          // Add role to user object
+          user.role = ["user"]
+        } else {
+          // Add existing user's role
+          user.role = existingUser.role
+        }
+      }
+      return true
+    },
   },
-
-  pages: {
-    signIn: "/auth/signin", // Custom sign-in page
+  session: {
+    strategy: "jwt",
   },
-}
+} satisfies NextAuthConfig
 
-export default NextAuth(authOptions)
+export const { handlers, auth, signIn, signOut } = NextAuth(authConfig)

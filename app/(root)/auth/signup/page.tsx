@@ -1,40 +1,83 @@
-// app/auth/signin/page.tsx
+// app/auth/signup/page.tsx
 "use client"
 
 import { signIn } from "next-auth/react"
 import { useState } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 
-export default function SignInPage() {
+export default function SignUpPage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard"
   
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  })
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    })
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
+
+    // Validation
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match")
+      return
+    }
+
+    if (formData.password.length < 8) {
+      setError("Password must be at least 8 characters long")
+      return
+    }
+
     setIsLoading(true)
 
     try {
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
+      // Create user
+      const res = await fetch("/api/users/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+        }),
       })
 
-      if (result?.error) {
-        setError("Invalid email or password")
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.message || "Something went wrong")
         setIsLoading(false)
         return
       }
 
-      router.push(callbackUrl)
+      // Automatically sign in after successful registration
+      const signInResult = await signIn("credentials", {
+        email: formData.email,
+        password: formData.password,
+        redirect: false,
+      })
+
+      if (signInResult?.error) {
+        setError("Account created but sign-in failed. Please sign in manually.")
+        setIsLoading(false)
+        return
+      }
+
+      router.push("/dashboard")
       router.refresh()
     } catch (error) {
       setError("An error occurred. Please try again.")
@@ -42,12 +85,12 @@ export default function SignInPage() {
     }
   }
 
-  const handleOAuthSignIn = async (provider: "google" | "github") => {
+  const handleOAuthSignUp = async (provider: "google" | "github") => {
     setIsLoading(true)
     try {
-      await signIn(provider, { callbackUrl })
+      await signIn(provider, { callbackUrl: "/dashboard" })
     } catch (error) {
-      setError("OAuth sign-in failed")
+      setError("OAuth sign-up failed")
       setIsLoading(false)
     }
   }
@@ -57,15 +100,15 @@ export default function SignInPage() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to your account
+            Create your account
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Or{" "}
             <Link
-              href="/auth/signup"
+              href="/auth/signin"
               className="font-medium text-blue-600 hover:text-blue-500"
             >
-              create a new account
+              sign in to your account
             </Link>
           </p>
         </div>
@@ -74,7 +117,7 @@ export default function SignInPage() {
           {/* OAuth Buttons */}
           <div className="space-y-3">
             <button
-              onClick={() => handleOAuthSignIn("google")}
+              onClick={() => handleOAuthSignUp("google")}
               disabled={isLoading}
               className="w-full flex items-center justify-center gap-3 px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -96,11 +139,11 @@ export default function SignInPage() {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                 />
               </svg>
-              Continue with Google
+              Sign up with Google
             </button>
 
             <button
-              onClick={() => handleOAuthSignIn("github")}
+              onClick={() => handleOAuthSignUp("github")}
               disabled={isLoading}
               className="w-full flex items-center justify-center gap-3 px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -111,7 +154,7 @@ export default function SignInPage() {
                   clipRule="evenodd"
                 />
               </svg>
-              Continue with GitHub
+              Sign up with GitHub
             </button>
           </div>
 
@@ -120,11 +163,11 @@ export default function SignInPage() {
               <div className="w-full border-t border-gray-300" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-gray-50 text-gray-500">Or continue with</span>
+              <span className="px-2 bg-gray-50 text-gray-500">Or sign up with email</span>
             </div>
           </div>
 
-          {/* Credentials Form */}
+          {/* Sign Up Form */}
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
             {error && (
               <div className="rounded-md bg-red-50 p-4">
@@ -132,7 +175,23 @@ export default function SignInPage() {
               </div>
             )}
 
-            <div className="rounded-md shadow-sm -space-y-px">
+            <div className="rounded-md shadow-sm space-y-4">
+              <div>
+                <label htmlFor="name" className="sr-only">
+                  Full name
+                </label>
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  autoComplete="name"
+                  required
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                  placeholder="Full name"
+                />
+              </div>
               <div>
                 <label htmlFor="email" className="sr-only">
                   Email address
@@ -143,9 +202,9 @@ export default function SignInPage() {
                   type="email"
                   autoComplete="email"
                   required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                   placeholder="Email address"
                 />
               </div>
@@ -157,37 +216,50 @@ export default function SignInPage() {
                   id="password"
                   name="password"
                   type="password"
-                  autoComplete="current-password"
+                  autoComplete="new-password"
                   required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                  placeholder="Password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                  placeholder="Password (min. 8 characters)"
+                />
+              </div>
+              <div>
+                <label htmlFor="confirmPassword" className="sr-only">
+                  Confirm password
+                </label>
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                  placeholder="Confirm password"
                 />
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                  Remember me
-                </label>
-              </div>
-
-              <div className="text-sm">
-                <Link
-                  href="/auth/forgot-password"
-                  className="font-medium text-blue-600 hover:text-blue-500"
-                >
-                  Forgot your password?
+            <div className="flex items-center">
+              <input
+                id="terms"
+                name="terms"
+                type="checkbox"
+                required
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label htmlFor="terms" className="ml-2 block text-sm text-gray-900">
+                I agree to the{" "}
+                <Link href="/terms" className="text-blue-600 hover:text-blue-500">
+                  Terms of Service
+                </Link>{" "}
+                and{" "}
+                <Link href="/privacy" className="text-blue-600 hover:text-blue-500">
+                  Privacy Policy
                 </Link>
-              </div>
+              </label>
             </div>
 
             <div>
@@ -196,7 +268,7 @@ export default function SignInPage() {
                 disabled={isLoading}
                 className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading ? "Signing in..." : "Sign in"}
+                {isLoading ? "Creating account..." : "Sign up"}
               </button>
             </div>
           </form>
