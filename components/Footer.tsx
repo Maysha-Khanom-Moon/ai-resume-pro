@@ -1,106 +1,150 @@
+'use client';
 
-import { FileText, Github, Linkedin, Twitter } from "lucide-react";
-import Link from "next/link";
+import Link from 'next/link';
+import Image from 'next/image';
+import { Monitor, Sun, Moon } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import { useEffect, useState } from 'react';
 
-const Footer = () => {
+export default function Footer() {
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const themeButtons = [
+    { value: 'system', icon: Monitor, label: 'System' },
+    { value: 'light', icon: Sun, label: 'Light' },
+    { value: 'dark', icon: Moon, label: 'Dark' }
+  ];
+
   return (
-    <footer className="bg-card border-t border-border">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Brand */}
-          <div className="col-span-1">
-            <Link href ="/" className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center">
-                <FileText className="w-4 h-4 text-primary-foreground" />
+    <footer className="border-t-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+        {/* Main Footer Content */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12 mb-12">
+          {/* Brand Column */}
+          <div className="space-y-4">
+            <Link href="/" className="flex items-center gap-3 group">
+              <div className="relative w-10 h-10 rounded-xl bg-linear-to-br from-blue-500 to-cyan-500 p-2 shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-all">
+                <Image
+                  src="/logo.png"
+                  alt="AIResumePro"
+                  fill
+                  className="object-contain p-1"
+                />
               </div>
-              <span className="font-display font-bold text-xl">ResumeAI</span>
+              <span className="text-xl font-bold bg-linear-to-r from-blue-600 to-cyan-600 dark:from-blue-400 dark:to-cyan-400 bg-clip-text text-transparent">
+                AIResumePro
+              </span>
             </Link>
-            <p className="text-sm text-muted-foreground">
-              AI-powered resume matching to help you land your dream job faster.
+            <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+              AI-powered resume optimization to help you land your dream job. 
+              Trusted by 50,000+ professionals worldwide.
             </p>
           </div>
 
-          {/* Product */}
+          {/* Product Column */}
           <div>
-            <h4 className="font-display font-semibold mb-4">Product</h4>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>
-                <Link href="/features" className="hover:text-foreground transition-colors">
-                  Features
-                </Link>
-              </li>
-              <li>
-                <Link href="/pricing" className="hover:text-foreground transition-colors">
-                  Pricing
-                </Link>
-              </li>
-              <li>
-                <Link href="/enterprise" className="hover:text-foreground transition-colors">
-                  For Recruiters
-                </Link>
-              </li>
+            <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-sm uppercase tracking-wider">Product</h3>
+            <ul className="space-y-3">
+              {['Features', 'Pricing', 'Examples', 'Templates'].map((item) => (
+                <li key={item}>
+                  <Link
+                    href={`/${item.toLowerCase()}`}
+                    className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm font-medium"
+                  >
+                    {item}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Company */}
+          {/* Company Column */}
           <div>
-            <h4 className="font-display font-semibold mb-4">Company</h4>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>
-                <Link href="/about" className="hover:text-foreground transition-colors">
-                  About
-                </Link>
-              </li>
-              <li>
-                <Link href="/blog" className="hover:text-foreground transition-colors">
-                  Blog
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="hover:text-foreground transition-colors">
-                  Contact
-                </Link>
-              </li>
+            <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-sm uppercase tracking-wider">Company</h3>
+            <ul className="space-y-3">
+              {['About', 'Blog', 'Careers', 'Contact'].map((item) => (
+                <li key={item}>
+                  <Link
+                    href={`/${item.toLowerCase()}`}
+                    className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm font-medium"
+                  >
+                    {item}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Legal */}
+          {/* Legal Column */}
           <div>
-            <h4 className="font-display font-semibold mb-4">Legal</h4>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>
-                <Link href="/privacy" className="hover:text-foreground transition-colors">
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link href="/terms" className="hover:text-foreground transition-colors">
-                  Terms of Service
-                </Link>
-              </li>
+            <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-sm uppercase tracking-wider">Legal</h3>
+            <ul className="space-y-3">
+              {['Privacy Policy', 'Terms of Service', 'Cookie Policy', 'GDPR'].map((item) => (
+                <li key={item}>
+                  <Link
+                    href={`/${item.toLowerCase().replace(/ /g, '-')}`}
+                    className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm font-medium"
+                  >
+                    {item}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row items-center justify-between mt-12 pt-8 border-t border-border">
-          <p className="text-sm text-muted-foreground">
-            © 2026 ResumeAI. All rights reserved.
+        {/* Bottom Bar */}
+        <div className="pt-8 border-t-2 border-slate-200 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between gap-6">
+          {/* Copyright */}
+          <p className="text-slate-600 dark:text-slate-400 text-sm text-center md:text-left">
+            © {new Date().getFullYear()} AIResumePro. All rights reserved.
           </p>
-          <div className="flex items-center gap-4 mt-4 md:mt-0">
-            <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-              <Twitter className="w-5 h-5" />
-            </a>
-            <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-              <Linkedin className="w-5 h-5" />
-            </a>
-            <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-              <Github className="w-5 h-5" />
-            </a>
+
+          {/* Theme Switcher */}
+          {mounted && (
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-slate-600 dark:text-slate-400 font-medium">Theme:</span>
+              <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl border-2 border-slate-200 dark:border-slate-700 shadow-inner">
+                {themeButtons.map((btn) => (
+                  <button
+                    key={btn.value}
+                    onClick={() => setTheme(btn.value)}
+                    className={`p-2.5 rounded-lg transition-all ${
+                      theme === btn.value
+                        ? 'bg-linear-to-br from-blue-600 to-cyan-600 text-white shadow-lg shadow-blue-500/30'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
+                    }`}
+                    aria-label={`Switch to ${btn.label} theme`}
+                    title={btn.label}
+                  >
+                    <btn.icon className="w-4 h-4" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Social Links */}
+          <div className="flex items-center gap-6">
+            {['Twitter', 'LinkedIn', 'GitHub'].map((social) => (
+              <Link
+                key={social}
+                href={`https://${social.toLowerCase()}.com`}
+                className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm font-medium"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {social}
+              </Link>
+            ))}
           </div>
         </div>
       </div>
     </footer>
   );
-};
-
-export default Footer;
+}

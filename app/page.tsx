@@ -1,24 +1,23 @@
-import CTA from "@/components/CTA";
-import FindCandidates from "@/components/FindCandidates";
-import Footer from "@/components/Footer";
-import Hero from "@/components/Hero";
-import HowItWorks from "@/components/HowItWorks";
-import MatchCard from "@/components/MatchCard";
-import { ModeToggle } from "@/components/ModeToggle";
-import Navbar from "@/components/Navbar";
-import Stats from "@/components/Stats";
+import Hero from '@/components/Hero';
+import Features from '@/components/Features';
+import HowItWorks from '@/components/HowItWorks';
+import Testimonials from '@/components/Testimonials';
+import CTA from '@/components/CTA';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 
-export default function Home() {
+export default function LandingPage() {
   return (
-    <div className="bg-black">
+    <div className="min-h-screen">
       <Navbar />
-      <Hero />
-      <MatchCard />
-      <Stats />
-      <HowItWorks />
-      <FindCandidates />
-      <CTA />
+      <main>
+        <Hero />
+        <Features />
+        <HowItWorks />
+        <Testimonials />
+        <CTA />
+      </main>
       <Footer />
     </div>
-  )
+  );
 }

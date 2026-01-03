@@ -14,7 +14,7 @@ export default async function DashboardPage() {
   const isAdmin = session.user?.role?.includes("admin")
 
   return (
-    <div className="min-h-screen p-8 bg-gray-50">
+    <div className="min-h-screen p-8 bg-gray-100 text-black">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold">Dashboard</h1>
