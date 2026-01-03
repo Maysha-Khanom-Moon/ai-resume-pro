@@ -8,11 +8,11 @@ import dbConnect from '@/lib/db';
 import { User } from '@/models/User';
 import { Resume } from '@/models/Resume';
 import { Job } from '@/models/Job';
-import Footer from '@/components/Footer';
 
 export default async function DashboardPage() {
   // Check authentication
   const session = await auth();
+  
   if (!session || !session.user) {
     redirect('/auth/signin');
   }
@@ -87,12 +87,10 @@ export default async function DashboardPage() {
             <JobPostings 
               postedJobs={postedJobsData}
               userId={userData._id}
-              isRecruiter={userData.role.includes('recruiter') || userData.role.includes('admin')}
             />
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   );
 }

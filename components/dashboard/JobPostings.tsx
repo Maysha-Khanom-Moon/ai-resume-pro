@@ -1,3 +1,4 @@
+// components/dashboard/JobPostings.tsx
 'use client';
 
 import Link from 'next/link';
@@ -26,31 +27,9 @@ interface Job {
 interface JobPostingsProps {
   postedJobs: Job[];
   userId: string;
-  isRecruiter: boolean;
 }
 
-export default function JobPostings({ postedJobs, userId, isRecruiter }: JobPostingsProps) {
-  if (!isRecruiter) {
-    return (
-      <div className="bg-white dark:bg-slate-800/50 border-2 border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-lg">
-        <div className="text-center py-8">
-          <Briefcase className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-            Become a Recruiter
-          </h3>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-            Post jobs and find the perfect candidates for your company
-          </p>
-          <Link href="/dashboard/recruiter/apply">
-            <Button className="bg-linear-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white">
-              Apply as Recruiter
-            </Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
+export default function JobPostings({ postedJobs, userId }: JobPostingsProps) {
   return (
     <div className="bg-white dark:bg-slate-800/50 border-2 border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-lg sticky top-24">
       <div className="flex items-center justify-between mb-6">
@@ -69,15 +48,15 @@ export default function JobPostings({ postedJobs, userId, isRecruiter }: JobPost
         </div>
       </div>
 
-      <Link href="/dashboard/jobs/post" className="block mb-6">
-        <Button className="w-full bg-linear-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white">
+      <Link href="/job-postings" className="block mb-6">
+        <Button className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white">
           <Plus className="w-4 h-4 mr-2" />
           Post New Job
         </Button>
       </Link>
 
       {postedJobs.length > 0 ? (
-        <div className="space-y-3 max-h-150 overflow-y-auto pr-2">
+        <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
           {postedJobs.map((job) => (
             <div
               key={job._id}
@@ -113,7 +92,7 @@ export default function JobPostings({ postedJobs, userId, isRecruiter }: JobPost
                   </span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Link href={`/dashboard/jobs/${job._id}`}>
+                  <Link href={`/jobs/${job._id}`}>
                     <Button
                       size="icon"
                       variant="ghost"
@@ -122,7 +101,7 @@ export default function JobPostings({ postedJobs, userId, isRecruiter }: JobPost
                       <Eye className="w-4 h-4" />
                     </Button>
                   </Link>
-                  <Link href={`/dashboard/jobs/${job._id}/edit`}>
+                  <Link href={`/jobs/${job._id}`}>
                     <Button
                       size="icon"
                       variant="ghost"
@@ -142,8 +121,8 @@ export default function JobPostings({ postedJobs, userId, isRecruiter }: JobPost
           <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
             No jobs posted yet
           </p>
-          <Link href="/dashboard/jobs/post">
-            <Button className="bg-linear-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white text-sm">
+          <Link href="/job-postings">
+            <Button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white text-sm">
               <Plus className="w-4 h-4 mr-2" />
               Post Your First Job
             </Button>
@@ -152,7 +131,7 @@ export default function JobPostings({ postedJobs, userId, isRecruiter }: JobPost
       )}
 
       {postedJobs.length > 0 && (
-        <Link href="/dashboard/my-jobs" className="block mt-4">
+        <Link href="/job-postings" className="block mt-4">
           <Button variant="ghost" className="w-full text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-950 text-sm">
             Manage All Jobs
             <ArrowRight className="w-4 h-4 ml-2" />

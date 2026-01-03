@@ -32,7 +32,7 @@ export default function DashboardNavbar({ user }: DashboardNavbarProps) {
 
   const navLinks = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Find Jobs', href: '/dashboard/jobs', icon: Briefcase },
+    { name: 'Find Jobs', href: '/jobs', icon: Briefcase },
     { name: 'Resume Checker', href: '/dashboard/resume-checker', icon: FileText },
     ...(isAdmin ? [{ name: 'Admin Panel', href: '/admin', icon: Shield }] : [])
   ];
