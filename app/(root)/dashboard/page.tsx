@@ -1,89 +1,98 @@
-// app/dashboard/page.tsx
-import { auth } from "@/auth"
-import { redirect } from "next/navigation"
-import Link from "next/link"
-import Image from "next/image"
+import { redirect } from 'next/navigation';
+import { auth } from '@/auth';
+import DashboardNavbar from '@/components/dashboard/DashboardNavbar';
+import UserDetailsCard from '@/components/dashboard/UserDetailsCard';
+import ResumesAndApplications from '@/components/dashboard/ResumesAndApplications';
+import JobPostings from '@/components/dashboard/JobPostings';
+import dbConnect from '@/lib/db';
+import { User } from '@/models/User';
+import { Resume } from '@/models/Resume';
+import { Job } from '@/models/Job';
+import Footer from '@/components/Footer';
 
 export default async function DashboardPage() {
-  const session = await auth()
-  
-  if (!session) {
-    redirect("/auth/signin")
+  // Check authentication
+  const session = await auth();
+  if (!session || !session.user) {
+    redirect('/auth/signin');
   }
 
-  const isAdmin = session.user?.role?.includes("admin")
+  // Connect to database
+  await dbConnect();
+
+  // Fetch user data
+  const user = await User.findById(session.user.id).lean();
+  
+  if (!user) {
+    redirect('/auth/signin');
+  }
+
+  // Fetch user's resumes
+  const resumes = await Resume.find({ user: user._id })
+    .sort({ createdAt: -1 })
+    .limit(5)
+    .lean();
+
+  // Fetch jobs user has applied to (jobs where user is in applicants array)
+  const appliedJobs = await Job.find({ applicants: user._id })
+    .populate('recruiter', 'name company')
+    .sort({ createdAt: -1 })
+    .limit(5)
+    .lean();
+
+  // Fetch jobs posted by user (if they're a recruiter)
+  const postedJobs = await Job.find({ recruiter: user._id })
+    .sort({ createdAt: -1 })
+    .limit(5)
+    .lean();
+
+  // Convert mongoose documents to plain objects
+  const userData = JSON.parse(JSON.stringify(user));
+  const resumesData = JSON.parse(JSON.stringify(resumes));
+  const appliedJobsData = JSON.parse(JSON.stringify(appliedJobs));
+  const postedJobsData = JSON.parse(JSON.stringify(postedJobs));
 
   return (
-    <div className="min-h-screen p-8 bg-gray-100 text-black">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          {isAdmin && (
-            <span className="px-3 py-1 bg-purple-600 text-white text-sm font-semibold rounded-full">
-              ADMIN
-            </span>
-          )}
-        </div>
-        
-        <div className="bg-white shadow rounded-lg p-6 mb-6">
-          <div className="flex items-center gap-6 mb-6">
-            {session.user?.image ? (
-              <Image
-                src={session.user.image}
-                alt={session.user.name || "User"}
-                width={80}
-                height={80}
-                className="rounded-full"
-              />
-            ) : (
-              <div className="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center text-white text-2xl font-bold">
-                {session.user?.name?.[0]?.toUpperCase() || "U"}
-              </div>
-            )}
-            
-            <div>
-              <h2 className="text-2xl font-semibold">Welcome, {session.user?.name}!</h2>
-              <p className="text-gray-600">{session.user?.email}</p>
-              {isAdmin && (
-                <p className="text-purple-600 font-semibold mt-1">Administrator Account</p>
-              )}
-            </div>
-          </div>
-          
-          <div className="space-y-2 border-t pt-4">
-            <p><strong>User ID:</strong> {session.user?.id}</p>
-            <p><strong>Role:</strong> {session.user?.role?.join(", ") || "user"}</p>
-            {session.user?.image && (
-              <p><strong>Profile Image:</strong> <span className="text-green-600">✓ Set</span></p>
-            )}
-          </div>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+      <DashboardNavbar user={userData} />
+      
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">
+            Welcome back, {userData.name}!
+          </h1>
+          <p className="text-slate-600 dark:text-slate-400 mt-2">
+            Here's what's happening with your job search
+          </p>
         </div>
 
-        <div className="space-x-4">
-          <Link 
-            href="/profile"
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 inline-block"
-          >
-            Edit Profile
-          </Link>
-          
-          {isAdmin && (
-            <Link 
-              href="/admin"
-              className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 inline-block"
-            >
-              Admin Panel
-            </Link>
-          )}
-          
-          <Link 
-            href="/api/auth/signout"
-            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 inline-block"
-          >
-            Sign Out
-          </Link>
+        {/* Three Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left Column - User Details */}
+          <div className="lg:col-span-3">
+            <UserDetailsCard user={userData} />
+          </div>
+
+          {/* Middle Column - Resumes & Applied Jobs */}
+          <div className="lg:col-span-6">
+            <ResumesAndApplications 
+              resumes={resumesData} 
+              appliedJobs={appliedJobsData}
+              userId={userData._id}
+            />
+          </div>
+
+          {/* Right Column - Posted Jobs */}
+          <div className="lg:col-span-3">
+            <JobPostings 
+              postedJobs={postedJobsData}
+              userId={userData._id}
+              isRecruiter={userData.role.includes('recruiter') || userData.role.includes('admin')}
+            />
+          </div>
         </div>
-      </div>
+      </main>
+      <Footer />
     </div>
-  )
+  );
 }

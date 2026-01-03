@@ -31,9 +31,9 @@ export default function Navbar() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-1">
             {[
-              { name: 'Features', href: '/features' },
-              { name: 'Pricing', href: '/pricing' },
-              { name: 'About', href: '/about' },
+              { name: 'Jobs', href: '/jobs' },
+              { name: 'Resume Checker', href: '/resume-checker' },
+              { name: 'About Us', href: '/about' },
               { name: 'Contact', href: '/contact' }
             ].map((item) => (
               <Link
@@ -80,9 +80,9 @@ export default function Navbar() {
         <div className="md:hidden border-t bg-background/95 backdrop-blur">
           <div className="container mx-auto px-4 py-6 space-y-1">
             {[
-              { name: 'Features', href: '/features' },
-              { name: 'Pricing', href: '/pricing' },
-              { name: 'About', href: '/about' },
+              { name: 'Jobs', href: '/jobs' },
+              { name: 'Resume Checker', href: '/resume-checker' },
+              { name: 'About Us', href: '/about' },
               { name: 'Contact', href: '/contact' }
             ].map((item) => (
               <Link
