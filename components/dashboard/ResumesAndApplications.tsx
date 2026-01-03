@@ -173,7 +173,7 @@ export default function ResumesAndApplications({
               </p>
             </div>
           </div>
-          <Link href="/dashboard/jobs">
+          <Link href="/jobs">
             <Button variant="outline" className="border-2">
               Browse Jobs
             </Button>
