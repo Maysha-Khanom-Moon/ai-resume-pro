@@ -11,10 +11,23 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await auth()
     const { id } = await params
     
+    if (!session || !session.user) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+    }
+
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ message: "Invalid user ID" }, { status: 400 })
+    }
+
+    // Only allow users to view their own profile or admins to view any
+    const isAdmin = session.user.role?.includes('admin')
+    const isOwnProfile = session.user.id === id
+
+    if (!isAdmin && !isOwnProfile) {
+      return NextResponse.json({ message: "Forbidden" }, { status: 403 })
     }
 
     await connectDB()
@@ -36,11 +49,43 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await auth()
     const { id } = await params
     const body = await req.json()
 
+    if (!session || !session.user) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json({ message: "Invalid user ID" }, { status: 400 })
+    }
+
+    // Only allow users to update their own profile or admins to update any
+    const isAdmin = session.user.role?.includes('admin')
+    const isOwnProfile = session.user.id === id
+
+    if (!isAdmin && !isOwnProfile) {
+      return NextResponse.json({ message: "Forbidden" }, { status: 403 })
+    }
+
     await connectDB()
-    const user = await User.findByIdAndUpdate(id, body, { new: true }).select('-password')
+
+    // Prevent regular users from changing their role
+    if (!isAdmin && body.role) {
+      delete body.role
+    }
+
+    // Prevent changing password through this endpoint
+    if (body.password) {
+      delete body.password
+    }
+
+    const user = await User.findByIdAndUpdate(
+      id, 
+      { $set: body }, 
+      { new: true, runValidators: true }
+    ).select('-password')
 
     if (!user) {
       return NextResponse.json({ message: "User not found" }, { status: 404 })
@@ -48,6 +93,7 @@ export async function PUT(
 
     return NextResponse.json({ message: "User updated", user })
   } catch (error) {
+    console.error("Update error:", error)
     return NextResponse.json({ message: "Error updating user" }, { status: 500 })
   }
 }
@@ -61,6 +107,14 @@ export async function DELETE(
     const session = await auth()
     const { id } = await params
 
+    if (!session || !session.user) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json({ message: "Invalid user ID" }, { status: 400 })
+    }
+
     await connectDB()
     
     const user = await User.findById(id)
@@ -70,19 +124,19 @@ export async function DELETE(
 
     // Prevent deleting admin account
     if (user.email === "maysha412@gmail.com") {
-      return NextResponse.json({ message: "Cannot delete admin" }, { status: 403 })
+      return NextResponse.json({ message: "Cannot delete admin account" }, { status: 403 })
     }
 
-    // Only admin can delete other users
-    const isAdmin = session?.user?.role?.includes('admin')
-    const isOwnAccount = session?.user?.id === id
+    // Only admin can delete other users, users can delete their own account
+    const isAdmin = session.user.role?.includes('admin')
+    const isOwnAccount = session.user.id === id
 
     if (!isAdmin && !isOwnAccount) {
       return NextResponse.json({ message: "Forbidden" }, { status: 403 })
     }
 
     await User.findByIdAndDelete(id)
-    return NextResponse.json({ message: "User deleted" })
+    return NextResponse.json({ message: "User deleted successfully" })
   } catch (error) {
     return NextResponse.json({ message: "Error deleting user" }, { status: 500 })
   }
