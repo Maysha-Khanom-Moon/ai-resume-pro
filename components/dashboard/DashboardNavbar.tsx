@@ -32,18 +32,18 @@ export default function DashboardNavbar({ user }: DashboardNavbarProps) {
 
   const navLinks = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Jobs', href: '/dashboard/jobs', icon: Briefcase },
+    { name: 'Find Jobs', href: '/dashboard/jobs', icon: Briefcase },
     { name: 'Resume Checker', href: '/dashboard/resume-checker', icon: FileText },
     ...(isAdmin ? [{ name: 'Admin Panel', href: '/admin', icon: Shield }] : [])
   ];
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b-2 border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-slate-900/60">
+    <nav className="sticky top-0 z-50 w-full border-b-2 border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur supports-backdrop-filter:bg-white/60 dark:supports-backdrop-filter:bg-slate-900/60">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <Link href="/dashboard" className="flex items-center gap-3 group">
-            <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 p-2 shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-all group-hover:scale-105">
+            <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-xl bg-linear-to-br from-blue-500 to-cyan-500 p-2 shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-all group-hover:scale-105">
               <Image
                 src="/logo.png"
                 alt="AIResumePro"
@@ -51,7 +51,7 @@ export default function DashboardNavbar({ user }: DashboardNavbarProps) {
                 className="object-contain p-1"
               />
             </div>
-            <span className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 dark:from-blue-400 dark:to-cyan-400 bg-clip-text text-transparent">
+            <span className="text-xl md:text-2xl font-bold bg-linear-to-r from-blue-600 to-cyan-600 dark:from-blue-400 dark:to-cyan-400 bg-clip-text text-transparent">
               AIResumePro
             </span>
           </Link>
@@ -87,7 +87,7 @@ export default function DashboardNavbar({ user }: DashboardNavbarProps) {
                     />
                   </div>
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-semibold text-sm">
+                  <div className="w-8 h-8 rounded-full bg-linear-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-semibold text-sm">
                     {user.name.charAt(0).toUpperCase()}
                   </div>
                 )}
@@ -131,7 +131,7 @@ export default function DashboardNavbar({ user }: DashboardNavbarProps) {
                   />
                 </div>
               ) : (
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-semibold text-lg">
+                <div className="w-12 h-12 rounded-full bg-linear-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-semibold text-lg">
                   {user.name.charAt(0).toUpperCase()}
                 </div>
               )}

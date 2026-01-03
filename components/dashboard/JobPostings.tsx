@@ -42,7 +42,7 @@ export default function JobPostings({ postedJobs, userId, isRecruiter }: JobPost
             Post jobs and find the perfect candidates for your company
           </p>
           <Link href="/dashboard/recruiter/apply">
-            <Button className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white">
+            <Button className="bg-linear-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white">
               Apply as Recruiter
             </Button>
           </Link>
@@ -70,14 +70,14 @@ export default function JobPostings({ postedJobs, userId, isRecruiter }: JobPost
       </div>
 
       <Link href="/dashboard/jobs/post" className="block mb-6">
-        <Button className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white">
+        <Button className="w-full bg-linear-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white">
           <Plus className="w-4 h-4 mr-2" />
           Post New Job
         </Button>
       </Link>
 
       {postedJobs.length > 0 ? (
-        <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+        <div className="space-y-3 max-h-150 overflow-y-auto pr-2">
           {postedJobs.map((job) => (
             <div
               key={job._id}
@@ -143,7 +143,7 @@ export default function JobPostings({ postedJobs, userId, isRecruiter }: JobPost
             No jobs posted yet
           </p>
           <Link href="/dashboard/jobs/post">
-            <Button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white text-sm">
+            <Button className="bg-linear-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white text-sm">
               <Plus className="w-4 h-4 mr-2" />
               Post Your First Job
             </Button>

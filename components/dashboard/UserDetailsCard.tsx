@@ -35,7 +35,7 @@ export default function UserDetailsCard({ user }: UserDetailsCardProps) {
   return (
     <div className="bg-white dark:bg-slate-800/50 border-2 border-slate-200 dark:border-slate-700 rounded-2xl shadow-lg overflow-hidden sticky top-24">
       {/* Header with gradient */}
-      <div className="h-24 bg-gradient-to-br from-blue-500 to-cyan-500" />
+      <div className="h-24 bg-linear-to-br from-blue-500 to-cyan-500" />
       
       {/* Profile Section */}
       <div className="px-6 pb-6">
@@ -51,7 +51,7 @@ export default function UserDetailsCard({ user }: UserDetailsCardProps) {
               />
             </div>
           ) : (
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold text-3xl border-4 border-white dark:border-slate-800 shadow-xl">
+            <div className="w-24 h-24 rounded-full bg-linear-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold text-3xl border-4 border-white dark:border-slate-800 shadow-xl">
               {user.name.charAt(0).toUpperCase()}
             </div>
           )}
@@ -79,7 +79,7 @@ export default function UserDetailsCard({ user }: UserDetailsCardProps) {
 
         {/* Edit Profile Button */}
         <Link href="/dashboard/profile" className="block mb-6">
-          <Button className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white">
+          <Button className="w-full bg-linear-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white">
             <Edit className="w-4 h-4 mr-2" />
             Edit Profile
           </Button>
@@ -89,7 +89,7 @@ export default function UserDetailsCard({ user }: UserDetailsCardProps) {
         <div className="space-y-4 mb-6">
           {user.location && (
             <div className="flex items-start gap-3">
-              <MapPin className="w-5 h-5 text-slate-400 mt-0.5 flex-shrink-0" />
+              <MapPin className="w-5 h-5 text-slate-400 mt-0.5 shrink-0" />
               <div>
                 <div className="text-xs text-slate-500 dark:text-slate-500 font-medium mb-0.5">
                   Location
@@ -103,7 +103,7 @@ export default function UserDetailsCard({ user }: UserDetailsCardProps) {
 
           {user.currentJob && (
             <div className="flex items-start gap-3">
-              <Briefcase className="w-5 h-5 text-slate-400 mt-0.5 flex-shrink-0" />
+              <Briefcase className="w-5 h-5 text-slate-400 mt-0.5 shrink-0" />
               <div>
                 <div className="text-xs text-slate-500 dark:text-slate-500 font-medium mb-0.5">
                   Current Position
@@ -117,7 +117,7 @@ export default function UserDetailsCard({ user }: UserDetailsCardProps) {
 
           {user.education && (
             <div className="flex items-start gap-3">
-              <GraduationCap className="w-5 h-5 text-slate-400 mt-0.5 flex-shrink-0" />
+              <GraduationCap className="w-5 h-5 text-slate-400 mt-0.5 shrink-0" />
               <div>
                 <div className="text-xs text-slate-500 dark:text-slate-500 font-medium mb-0.5">
                   Education

@@ -67,7 +67,7 @@ export default function ResumesAndApplications({
             </div>
           </div>
           <Link href="/dashboard/resumes/upload">
-            <Button className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white">
+            <Button className="bg-linear-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white">
               <Plus className="w-4 h-4 mr-2" />
               Upload
             </Button>
@@ -139,7 +139,7 @@ export default function ResumesAndApplications({
               No resumes uploaded yet
             </p>
             <Link href="/dashboard/resumes/upload">
-              <Button className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white">
+              <Button className="bg-linear-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white">
                 <Plus className="w-4 h-4 mr-2" />
                 Upload Your First Resume
               </Button>
@@ -224,7 +224,7 @@ export default function ResumesAndApplications({
               You haven't applied to any jobs yet
             </p>
             <Link href="/dashboard/jobs">
-              <Button className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white">
+              <Button className="bg-linear-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white">
                 Browse Available Jobs
               </Button>
             </Link>
