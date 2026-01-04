@@ -1,6 +1,14 @@
 // models/User.ts
 import mongoose, { Schema, Document } from 'mongoose'
 
+export interface IResume {
+  _id?: mongoose.Types.ObjectId
+  url: string
+  filename: string
+  uploadedAt: Date
+  isDefault?: boolean
+}
+
 export interface IUser extends Document {
   _id: mongoose.Types.ObjectId
   name: string
@@ -18,9 +26,17 @@ export interface IUser extends Document {
   linkedinLink?: string
   location?: string
   provider?: string
+  resumes: IResume[]
   createdAt: Date
   updatedAt: Date
 }
+
+const ResumeSchema = new Schema({
+  url: { type: String, required: true },
+  filename: { type: String, required: true },
+  uploadedAt: { type: Date, default: Date.now },
+  isDefault: { type: Boolean, default: false }
+}, { _id: true })
 
 const UserSchema = new Schema<IUser>(
   {
@@ -28,7 +44,7 @@ const UserSchema = new Schema<IUser>(
     email: { 
       type: String, 
       required: true, 
-      unique: true,  // Remove this if you have schema.index() below
+      unique: true,
       lowercase: true,
       trim: true 
     },
@@ -45,11 +61,9 @@ const UserSchema = new Schema<IUser>(
     linkedinLink: { type: String },
     location: { type: String },
     provider: { type: String },
+    resumes: { type: [ResumeSchema], default: [] }
   },
   { timestamps: true }
 )
-
-// Remove this line if you have unique: true above
-// UserSchema.index({ email: 1 })
 
 export const User = mongoose.models.User || mongoose.model<IUser>('User', UserSchema)

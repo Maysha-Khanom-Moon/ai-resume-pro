@@ -1,3 +1,4 @@
+// app/dashboard/page.tsx
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import DashboardNavbar from '@/components/dashboard/DashboardNavbar';
@@ -6,8 +7,8 @@ import ResumesAndApplications from '@/components/dashboard/ResumesAndApplication
 import JobPostings from '@/components/dashboard/JobPostings';
 import dbConnect from '@/lib/db';
 import { User } from '@/models/User';
-import { Resume } from '@/models/Resume';
 import { Job } from '@/models/Job';
+import Footer from '@/components/Footer';
 
 export default async function DashboardPage() {
   // Check authentication
@@ -20,21 +21,22 @@ export default async function DashboardPage() {
   // Connect to database
   await dbConnect();
 
-  // Fetch user data
+  // Fetch user data with resumes
   const user = await User.findById(session.user.id).lean();
   
   if (!user) {
     redirect('/auth/signin');
   }
 
-  // Fetch user's resumes
-  const resumes = await Resume.find({ user: user._id })
-    .sort({ createdAt: -1 })
-    .limit(5)
-    .lean();
+  // Get user's resumes from the user document (sorted by most recent)
+  const resumes = (user.resumes || [])
+    .sort((a: any, b: any) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime())
+    .slice(0, 5);
 
-  // Fetch jobs user has applied to (jobs where user is in applicants array)
-  const appliedJobs = await Job.find({ applicants: user._id })
+  // Fetch jobs user has applied to (jobs where user._id is in applicants array)
+  const appliedJobs = await Job.find({ 
+    'applicants.user': user._id 
+  })
     .populate('recruiter', 'name company')
     .sort({ createdAt: -1 })
     .limit(5)
@@ -91,6 +93,7 @@ export default async function DashboardPage() {
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }
