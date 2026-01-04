@@ -33,6 +33,7 @@ interface AppliedJob {
   company: string;
   location: string;
   createdAt: string;
+  appliedAt: string; // Changed from optional to required since we'll always have it
   recruiter: {
     name: string;
     company?: string;
@@ -61,7 +62,6 @@ export default function ResumesAndApplications({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file
     if (file.type !== 'application/pdf') {
       alert('Please upload a PDF file');
       return;
@@ -75,7 +75,6 @@ export default function ResumesAndApplications({
     setUploadingResume(true);
 
     try {
-      // Upload to Cloudinary
       const formData = new FormData();
       formData.append('file', file);
 
@@ -90,7 +89,6 @@ export default function ResumesAndApplications({
 
       const { url } = await uploadResponse.json();
 
-      // Save to user's resumes
       const saveResponse = await fetch(`/api/users/${userId}/resumes`, {
         method: 'POST',
         headers: {
@@ -115,7 +113,6 @@ export default function ResumesAndApplications({
       alert('Failed to upload resume');
     } finally {
       setUploadingResume(false);
-      // Reset file input
       e.target.value = '';
     }
   };
@@ -284,8 +281,8 @@ export default function ResumesAndApplications({
                           )}
                         </Button>
                       )}
-                      
                       <a
+                      
                         href={resume.url}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -327,49 +324,47 @@ export default function ResumesAndApplications({
         ) : (
           <div className="space-y-4">
             {appliedJobs.length > 0 ? (
-              <>
-                <div className="space-y-3">
-                  {appliedJobs.map((job) => (
-                    <Link
-                      key={job._id}
-                      href={`/jobs/${job._id}`}
-                      className="block p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border-2 border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-600 transition-all"
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold flex-shrink-0">
-                          {job.company.charAt(0).toUpperCase()}
+              <div className="space-y-3">
+                {appliedJobs.map((job) => (
+                  <Link
+                    key={job._id}
+                    href={`/jobs/${job._id}`}
+                    className="block p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border-2 border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-600 transition-all"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold flex-shrink-0">
+                        {job.company.charAt(0).toUpperCase()}
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-slate-900 dark:text-white mb-1 truncate">
+                          {job.title}
+                        </h4>
+                        
+                        <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600 dark:text-slate-400">
+                          <div className="flex items-center gap-1">
+                            <Building2 className="w-4 h-4" />
+                            <span>{job.company}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <MapPin className="w-4 h-4" />
+                            <span>{job.location}</span>
+                          </div>
                         </div>
                         
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-semibold text-slate-900 dark:text-white mb-1 truncate">
-                            {job.title}
-                          </h4>
-                          
-                          <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600 dark:text-slate-400">
-                            <div className="flex items-center gap-1">
-                              <Building2 className="w-4 h-4" />
-                              <span>{job.company}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <MapPin className="w-4 h-4" />
-                              <span>{job.location}</span>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 mt-2">
-                            <Calendar className="w-3 h-3" />
-                            <span>
-                              Applied {formatDistanceToNow(new Date(job.createdAt), { addSuffix: true })}
-                            </span>
-                          </div>
+                        <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 mt-2">
+                          <Calendar className="w-3 h-3" />
+                          <span>
+                            Applied {formatDistanceToNow(new Date(job.appliedAt), { addSuffix: true })}
+                          </span>
                         </div>
-
-                        <ExternalLink className="w-5 h-5 text-slate-400 flex-shrink-0" />
                       </div>
-                    </Link>
-                  ))}
-                </div>
-              </>
+
+                      <ExternalLink className="w-5 h-5 text-slate-400 flex-shrink-0" />
+                    </div>
+                  </Link>
+                ))}
+              </div>
             ) : (
               <div className="text-center py-12">
                 <Briefcase className="w-16 h-16 mx-auto text-slate-300 dark:text-slate-600 mb-4" />

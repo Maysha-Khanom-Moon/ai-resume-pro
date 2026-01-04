@@ -1,4 +1,4 @@
-// app/dashboard/page.tsx
+// app/(root)/dashboard/page.tsx
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import DashboardNavbar from '@/components/dashboard/DashboardNavbar';
@@ -9,6 +9,28 @@ import dbConnect from '@/lib/db';
 import { User } from '@/models/User';
 import { Job } from '@/models/Job';
 import Footer from '@/components/Footer';
+
+// Define the populated recruiter type
+interface PopulatedRecruiter {
+  _id: string;
+  name: string;
+  company?: string;
+}
+
+// Define the job type with populated recruiter
+interface JobWithPopulatedRecruiter {
+  _id: any;
+  title: string;
+  company: string;
+  location: string;
+  createdAt: Date;
+  recruiter: PopulatedRecruiter;
+  applicants: Array<{
+    user: any;
+    resumeUrl: string;
+    appliedAt: Date;
+  }>;
+}
 
 export default async function DashboardPage() {
   // Check authentication
@@ -34,13 +56,34 @@ export default async function DashboardPage() {
     .slice(0, 5);
 
   // Fetch jobs user has applied to (jobs where user._id is in applicants array)
-  const appliedJobs = await Job.find({ 
+  const appliedJobsRaw = await Job.find({ 
     'applicants.user': user._id 
   })
     .populate('recruiter', 'name company')
     .sort({ createdAt: -1 })
     .limit(5)
-    .lean();
+    .lean() as unknown as JobWithPopulatedRecruiter[];
+
+  // Transform applied jobs to include appliedAt date
+  const appliedJobs = appliedJobsRaw.map(job => {
+    // Find the specific application for this user
+    const userApplication = job.applicants.find(
+      (app: any) => app.user.toString() === session.user.id
+    );
+    
+    return {
+      _id: job._id.toString(),
+      title: job.title,
+      company: job.company,
+      location: job.location,
+      createdAt: job.createdAt.toISOString(),
+      appliedAt: userApplication?.appliedAt?.toISOString() || job.createdAt.toISOString(),
+      recruiter: {
+        name: job.recruiter.name,
+        company: job.recruiter.company
+      }
+    };
+  });
 
   // Fetch jobs posted by user (if they're a recruiter)
   const postedJobs = await Job.find({ recruiter: user._id })
@@ -51,7 +94,6 @@ export default async function DashboardPage() {
   // Convert mongoose documents to plain objects
   const userData = JSON.parse(JSON.stringify(user));
   const resumesData = JSON.parse(JSON.stringify(resumes));
-  const appliedJobsData = JSON.parse(JSON.stringify(appliedJobs));
   const postedJobsData = JSON.parse(JSON.stringify(postedJobs));
 
   return (
@@ -79,7 +121,7 @@ export default async function DashboardPage() {
           <div className="lg:col-span-6">
             <ResumesAndApplications 
               resumes={resumesData} 
-              appliedJobs={appliedJobsData}
+              appliedJobs={appliedJobs}
               userId={userData._id}
             />
           </div>

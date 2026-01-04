@@ -40,9 +40,11 @@ interface Job {
   };
   applicants: Array<{
     _id: string;
+    user: string; // This is the user ID
     name: string;
     email: string;
     resumeUrl?: string;
+    appliedAt?: string; // Add this field
   }>;
   createdAt: string;
 }
@@ -93,6 +95,12 @@ export default function JobDetailView({
     company: job.company,
     location: job.location
   });
+
+  // Calculate the user's application date
+  const userApplication = job.applicants.find(
+    (applicant) => applicant.user?.toString() === user._id
+  );
+  const applicationDate = userApplication?.appliedAt;
 
   // Fetch user's existing resumes
   useEffect(() => {
@@ -379,7 +387,12 @@ export default function JobDetailView({
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="w-5 h-5" />
-                  <span>{formatDistanceToNow(new Date(job.createdAt), { addSuffix: true })}</span>
+                  <span>
+                    {hasApplied && applicationDate 
+                      ? `Applied ${formatDistanceToNow(new Date(applicationDate), { addSuffix: true })}`
+                      : `Posted ${formatDistanceToNow(new Date(job.createdAt), { addSuffix: true })}`
+                    }
+                  </span>
                 </div>
               </div>
             </div>
@@ -525,6 +538,11 @@ export default function JobDetailView({
                         <div className="text-sm text-slate-600 dark:text-slate-400">
                           {applicant.email}
                         </div>
+                        {applicant.appliedAt && (
+                          <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                            Applied {formatDistanceToNow(new Date(applicant.appliedAt), { addSuffix: true })}
+                          </div>
+                        )}
                       </div>
                       {applicant.resumeUrl && (
                         <a
@@ -557,6 +575,11 @@ export default function JobDetailView({
                   <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
                   <p className="text-green-700 dark:text-green-300 font-semibold">
                     You have already applied to this job
+                    {applicationDate && (
+                      <span className="block text-sm mt-1">
+                        Applied {formatDistanceToNow(new Date(applicationDate), { addSuffix: true })}
+                      </span>
+                    )}
                   </p>
                 </div>
               ) : (
