@@ -48,11 +48,26 @@ export default async function JobPage({ params }: JobPageProps) {
   
   // Check if user has already applied
   const hasApplied = job.applicants.some(
-    (applicant: any) => applicant.user._id.toString() === user._id.toString()
+    (applicant: any) => applicant.user?._id?.toString() === user._id.toString()
   );
 
+  // Transform applicants to have the correct structure for the client component
+  const transformedJob = {
+    ...job,
+    applicants: job.applicants
+      .filter((applicant: any) => applicant.user) // Filter out any invalid applicants
+      .map((applicant: any) => ({
+        _id: applicant._id?.toString() || '',
+        user: applicant.user._id.toString(), // Convert back to string ID
+        name: applicant.user.name || 'Unknown',
+        email: applicant.user.email || '',
+        resumeUrl: applicant.resumeUrl,
+        appliedAt: applicant.appliedAt?.toISOString()
+      }))
+  };
+
   // Convert to plain objects for client component
-  const jobData = JSON.parse(JSON.stringify(job));
+  const jobData = JSON.parse(JSON.stringify(transformedJob));
   const userData = JSON.parse(JSON.stringify(user));
 
   return (
