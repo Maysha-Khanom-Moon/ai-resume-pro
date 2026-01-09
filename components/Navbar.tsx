@@ -32,7 +32,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-1">
             {[
               { name: 'Jobs', href: '/jobs' },
-              { name: 'Resume Checker', href: '/resume-checker' },
+              { name: 'Resume Checker', href: '/dashboard/resume-checker' },
               { name: 'About Us', href: '/about' },
               { name: 'Contact', href: '/contact' }
             ].map((item) => (
@@ -81,7 +81,7 @@ export default function Navbar() {
           <div className="container mx-auto px-4 py-6 space-y-1">
             {[
               { name: 'Jobs', href: '/jobs' },
-              { name: 'Resume Checker', href: '/resume-checker' },
+              { name: 'Resume Checker', href: 'dashboard/resume-checker' },
               { name: 'About', href: '/about' },
               { name: 'Contact', href: '/contact' }
             ].map((item) => (
